@@ -70,6 +70,9 @@
 // 新增
 - (NSString *)menu:(DOPDropDownMenu *)menu detailTextForItemsInRowAtIndexPath:(DOPIndexPath *)indexPath;
 
+// 新增　选择顶部的几个colurm
+- (void)menu:(DOPDropDownMenu *)menu tappedInColumn:(NSInteger)column;
+
 @end
 
 #pragma mark - delegate
@@ -121,6 +124,7 @@ typedef NS_ENUM(NSInteger, DOPIndicatorAlignType) {
 @property (nonatomic, strong) NSArray<NSNumber *> *indicatorAnimates;  // 指示器图片是否可以transform(在设置dataSource之前调用才会生效)
 @property (nonatomic, assign) DOPIndicatorAlignType indicatorAlignType;
 
+@property (nonatomic, assign) BOOL hidenTableViewWhenColumnOnlyOne;           // 当colum行只有一个时，是否隐藏选择列表
 /**
  *  the width of menu will be set to screen width defaultly
  *

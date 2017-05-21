@@ -15,6 +15,7 @@
 @property (nonatomic, strong) NSArray *movices;
 @property (nonatomic, strong) NSArray *hostels;
 @property (nonatomic, strong) NSArray *areas;
+@property (nonatomic, strong) NSArray *alls;
 
 @property (nonatomic, strong) NSArray *sorts;
 @property (nonatomic, weak) DOPDropDownMenu *menu;
@@ -37,11 +38,13 @@
     self.hostels = @[@"经济酒店",@"商务酒店",@"连锁酒店",@"度假酒店",@"公寓酒店"];
     self.areas = @[@"全城",@"芙蓉区",@"雨花区",@"天心区",@"开福区",@"岳麓区"];
     self.sorts = @[@"默认排序",@"离我最近",@"好评优先",@"人气优先",@"最新发布"];
+    self.alls = @[@"全部"];
     
     // 添加下拉菜单
     DOPDropDownMenu *menu = [[DOPDropDownMenu alloc] initWithOrigin:CGPointMake(0, 64) andHeight:44];
     menu.delegate = self;
     menu.dataSource = self;
+    menu.hidenTableViewWhenColumnOnlyOne = YES;
     [self.view addSubview:menu];
     _menu = menu;
     //当下拉菜单收回时的回调，用于网络请求新的数据
@@ -68,7 +71,7 @@
 
 - (NSInteger)numberOfColumnsInMenu:(DOPDropDownMenu *)menu
 {
-    return 3;
+    return 4;
 }
 
 - (NSInteger)menu:(DOPDropDownMenu *)menu numberOfRowsInColumn:(NSInteger)column
@@ -77,8 +80,10 @@
         return self.classifys.count;
     }else if (column == 1){
         return self.areas.count;
-    }else {
+    }else if (column == 2) {
         return self.sorts.count;
+    }else {
+        return self.alls.count;
     }
 }
 
@@ -88,8 +93,10 @@
         return self.classifys[indexPath.row];
     } else if (indexPath.column == 1){
         return self.areas[indexPath.row];
-    } else {
+    } else if (indexPath.column == 2) {
         return self.sorts[indexPath.row];
+    } else {
+        return self.alls[indexPath.row];
     }
 }
 
@@ -161,6 +168,11 @@
     }else {
          NSLog(@"点击了 %ld - %ld 项目",indexPath.column,indexPath.row);
     }
+}
+
+- (void)menu:(DOPDropDownMenu *)menu tappedInColumn:(NSInteger)column
+{
+    NSLog(@"点击了 %ld",column);
 }
 
 - (void)didReceiveMemoryWarning {

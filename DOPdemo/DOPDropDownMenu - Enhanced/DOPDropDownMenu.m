@@ -506,6 +506,16 @@
         }
     }
     
+    if (_dataSource && [_dataSource respondsToSelector:@selector(menu:tappedInColumn:)]) {
+        [_dataSource menu:self tappedInColumn:tapIndex];
+    }
+    
+    if (_hidenTableViewWhenColumnOnlyOne == YES) {
+       NSInteger rows = [_dataSource menu:self numberOfRowsInColumn:tapIndex];
+        if (rows == 1)
+            return;
+    }
+    
     if (tapIndex == _currentSelectedMenudIndex && _show) {
         [self animateIdicator:_indicators[_currentSelectedMenudIndex] background:_backGroundView tableView:_leftTableView title:_titles[_currentSelectedMenudIndex] forward:NO complecte:^{
             _currentSelectedMenudIndex = tapIndex;
