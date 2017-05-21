@@ -142,6 +142,8 @@ typedef NS_ENUM(NSInteger, DOPIndicatorAlignType) {
 // 重新加载数据
 - (void)reloadData;
 
+- (void)reloadDataWithColumn:(NSInteger)column;
+
 // 收回菜单
 - (void)hideMenu;
 
@@ -151,5 +153,7 @@ typedef NS_ENUM(NSInteger, DOPIndicatorAlignType) {
 - (void)selectIndexPath:(DOPIndexPath *)indexPath; // 默认trigger delegate
 
 - (void)selectIndexPath:(DOPIndexPath *)indexPath triggerDelegate:(BOOL)trigger; // 调用代理
+
+- (void)compelSetTitle:(NSString *)title inColumn:(NSInteger)column; //强制设置某一个column显示的文字
 @end
 

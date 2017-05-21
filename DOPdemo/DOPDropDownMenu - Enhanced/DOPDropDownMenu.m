@@ -168,6 +168,20 @@
     
 }
 
+- (void)reloadDataWithColumn:(NSInteger)column
+{
+    self.currentSelectedMenudIndex = column;
+    [self confiMenuWithSelectRow:0];
+}
+
+- (void)compelSetTitle:(NSString *)title inColumn:(NSInteger)column
+{
+    if (_titles.count > column) {
+        CATextLayer *titleLayer = (CATextLayer *)_titles[column];
+        titleLayer.string = title;
+    }
+}
+
 - (void)selectDefalutIndexPath
 {
     [self selectIndexPath:[DOPIndexPath indexPathWithCol:0 row:0]];
@@ -892,7 +906,6 @@
 }
 
 - (BOOL )confiMenuWithSelectRow:(NSInteger)row {
-    
     _currentSelectRowArray[_currentSelectedMenudIndex] = @(row);
     
     

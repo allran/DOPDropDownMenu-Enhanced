@@ -69,6 +69,11 @@
     [_menu selectIndexPath:[DOPIndexPath indexPathWithCol:0 row:2 item:2]];
 }
 
+- (IBAction)reloadMethod:(id)sender {
+    self.alls = @[@"全部11"];
+    [self.menu reloadDataWithColumn:2];
+}
+
 - (NSInteger)numberOfColumnsInMenu:(DOPDropDownMenu *)menu
 {
     return 4;
