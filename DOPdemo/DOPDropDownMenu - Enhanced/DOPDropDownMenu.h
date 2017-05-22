@@ -142,8 +142,6 @@ typedef NS_ENUM(NSInteger, DOPIndicatorAlignType) {
 // 重新加载数据
 - (void)reloadData;
 
-- (void)reloadDataWithColumn:(NSInteger)column;
-
 // 收回菜单
 - (void)hideMenu;
 

@@ -71,7 +71,8 @@
 
 - (IBAction)reloadMethod:(id)sender {
     self.alls = @[@"全部11"];
-    [self.menu reloadDataWithColumn:2];
+    
+    [self.menu selectIndexPath:[DOPIndexPath indexPathWithCol:3 row:0]];
 }
 
 - (NSInteger)numberOfColumnsInMenu:(DOPDropDownMenu *)menu

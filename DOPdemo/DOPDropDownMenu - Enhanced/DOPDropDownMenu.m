@@ -168,19 +168,6 @@
     
 }
 
-- (void)reloadDataWithColumn:(NSInteger)column
-{
-    self.currentSelectedMenudIndex = column;
-    [self confiMenuWithSelectRow:0];
-}
-
-- (void)compelSetTitle:(NSString *)title inColumn:(NSInteger)column
-{
-    if (_titles.count > column) {
-        CATextLayer *titleLayer = (CATextLayer *)_titles[column];
-        titleLayer.string = title;
-    }
-}
 
 - (void)selectDefalutIndexPath
 {
@@ -524,11 +511,7 @@
         [_dataSource menu:self tappedInColumn:tapIndex];
     }
     
-    if (_hidenTableViewWhenColumnOnlyOne == YES) {
-       NSInteger rows = [_dataSource menu:self numberOfRowsInColumn:tapIndex];
-        if (rows == 1)
-            return;
-    }
+
     
     if (tapIndex == _currentSelectedMenudIndex && _show) {
         [self animateIdicator:_indicators[_currentSelectedMenudIndex] background:_backGroundView tableView:_leftTableView title:_titles[_currentSelectedMenudIndex] forward:NO complecte:^{
@@ -540,6 +523,17 @@
         [_leftTableView reloadData];
         if (_dataSource && _dataSourceFlags.numberOfItemsInRow) {
             [_rightTableView reloadData];
+        }
+        
+        if (_hidenTableViewWhenColumnOnlyOne == YES) {
+            NSInteger rows = [_dataSource menu:self numberOfRowsInColumn:tapIndex];
+            if (rows == 1) {
+                [self animateIdicator:_indicators[_currentSelectedMenudIndex] background:_backGroundView tableView:_leftTableView title:_titles[_currentSelectedMenudIndex] forward:NO complecte:^{
+                    _currentSelectedMenudIndex = tapIndex;
+                    self.show = NO;
+                }];
+                return;
+            }
         }
         
         [self animateIdicator:_indicators[tapIndex] background:_backGroundView tableView:_leftTableView title:_titles[tapIndex] forward:YES complecte:^{
