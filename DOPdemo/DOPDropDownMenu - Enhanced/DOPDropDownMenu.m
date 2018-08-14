@@ -72,6 +72,8 @@
         unsigned int imageNameForItemsInRowAtIndexPath :1;
         unsigned int detailTextForRowAtIndexPath: 1;
         unsigned int detailTextForItemsInRowAtIndexPath: 1;
+        unsigned int accessoryViewForRowAtIndexPath: 1;
+        unsigned int accessoryViewForItemsInRowAtAtIndexPath: 1;
         
     }_dataSourceFlags;
 }
@@ -187,7 +189,7 @@
     CATextLayer *title = (CATextLayer *)_titles[indexPath.column];
     
     if (indexPath.item < 0 ) {
-        if (!_isClickHaveItemValid && [_dataSource menu:self numberOfItemsInRow:indexPath.row column:indexPath.column] > 0){
+        if (!_isClickHaveItemValid && _dataSourceFlags.numberOfItemsInRow && [_dataSource menu:self numberOfItemsInRow:indexPath.row column:indexPath.column] > 0){
             title.string = [_dataSource menu:self titleForItemsInRowAtIndexPath:[DOPIndexPath indexPathWithCol:indexPath.column row:self.isRemainMenuTitle ? 0 : indexPath.row item:0]];
             if (trigger) {
                 [_delegate menu:self didSelectRowAtIndexPath:[DOPIndexPath indexPathWithCol:indexPath.column row:indexPath.row item:0]];
@@ -205,7 +207,7 @@
         id indicator = _indicators[indexPath.column];
         [self layoutIndicator:indicator withTitle:title];
         self.currentIndexPath = indexPath;
-    }else if ([_dataSource menu:self numberOfItemsInRow:indexPath.row column:indexPath.column] > 0) { //changed by xiyang 解决当column不为0时默认选中为column=1，row=0，item=0导致无法选中的bug
+    }else if (_dataSourceFlags.numberOfItemsInRow && [_dataSource menu:self numberOfItemsInRow:indexPath.row column:indexPath.column] > 0) { //changed by xiyang 解决当column不为0时默认选中为column=1，row=0，item=0导致无法选中的bug
         title.string = [_dataSource menu:self titleForItemsInRowAtIndexPath:indexPath];
         if (trigger) {
             [_delegate menu:self didSelectRowAtIndexPath:indexPath];
@@ -238,10 +240,15 @@
         _numOfMenu = 1;
     }
     
+    [self.titles makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+    [self.bgLayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+    
     if (self.indicatorImageNames && self.indicatorImageNames.count) {
         self.indicatorIsImageView = YES;
+        [self.indicators makeObjectsPerformSelector:@selector(removeFromSuperview)];
     }else {
         self.indicatorIsImageView = NO;
+        [self.indicators makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
     }
     
     _currentSelectRowArray = [NSMutableArray arrayWithCapacity:_numOfMenu];
@@ -258,8 +265,9 @@
     _dataSourceFlags.imageNameForItemsInRowAtIndexPath = [_dataSource respondsToSelector:@selector(menu:imageNameForItemsInRowAtIndexPath:)];
     _dataSourceFlags.detailTextForRowAtIndexPath = [_dataSource respondsToSelector:@selector(menu:detailTextForRowAtIndexPath:)];
     _dataSourceFlags.detailTextForItemsInRowAtIndexPath = [_dataSource respondsToSelector:@selector(menu:detailTextForItemsInRowAtIndexPath:)];
+    _dataSourceFlags.accessoryViewForRowAtIndexPath = [_dataSource respondsToSelector:@selector(menu:accessoryViewForRowAtIndexPath:)];
+    _dataSourceFlags.accessoryViewForItemsInRowAtAtIndexPath = [_dataSource respondsToSelector:@selector(menu:accessoryViewForItemsInRowAtAtIndexPath:)];
     
-    _bottomShadow.hidden = NO;
     CGFloat textLayerInterval = self.frame.size.width / ( _numOfMenu * 2);
     CGFloat separatorLineInterval = self.frame.size.width / _numOfMenu;
     CGFloat bgLayerInterval = self.frame.size.width / _numOfMenu;
@@ -327,6 +335,7 @@
     _titles = [tempTitles copy];
     _indicators = [tempIndicators copy];
     _bgLayers = [tempBgLayers copy];
+    //_bottomShadow.hidden = NO;
 }
 
 //add by xiyang
@@ -356,6 +365,7 @@
         _fontSize = 14;
         _cellStyle = UITableViewCellStyleValue1;
         _separatorColor = kSeparatorColor;
+        _separatorHeighPercent = 0.5;
         _textColor = kTextColor;
         _textSelectedColor = kTextSelectColor;
         _detailTextFont = [UIFont systemFontOfSize:11];
@@ -363,6 +373,7 @@
         _indicatorColor = kTextColor;
         _tableViewHeight = IS_IPHONE_4_OR_LESS ? 200 : kTableViewHeight;
         _dropDownViewWidth = [UIScreen mainScreen].bounds.size.width;
+        _showBottomImage = YES;
         _isClickHaveItemValid = YES;
         _indicatorAlignType = DOPIndicatorAlignTypeRight;
         CGSize dropDownViewSize = CGSizeMake(_dropDownViewWidth, [UIScreen mainScreen].bounds.size.height);
@@ -405,7 +416,7 @@
         bottomShadow.backgroundColor = kSeparatorColor;
         bottomShadow.hidden = YES;
         [self addSubview:bottomShadow];
-        _bottomShadow = bottomShadow;
+//        _bottomShadow = bottomShadow;
     }
     return self;
 }
@@ -445,9 +456,10 @@
 - (CAShapeLayer *)createSeparatorLineWithColor:(UIColor *)color andPosition:(CGPoint)point {
     CAShapeLayer *layer = [CAShapeLayer new];
     
+    CGFloat height = CGRectGetHeight(self.frame) * _separatorHeighPercent;
     UIBezierPath *path = [UIBezierPath new];
     [path moveToPoint:CGPointMake(160,0)];
-    [path addLineToPoint:CGPointMake(160, 20)];
+    [path addLineToPoint:CGPointMake(160, height)];
     
     layer.path = path.CGPath;
     layer.lineWidth = 1;
@@ -673,8 +685,11 @@
             [self.superview addSubview:_leftTableView];
             
         }
-        _buttomImageView.frame = CGRectMake(self.origin.x, self.frame.origin.y + self.frame.size.height, _dropDownViewWidth, kButtomImageViewHeight);
-        [self.superview addSubview:_buttomImageView];
+        
+        if (_showBottomImage) {
+            _buttomImageView.frame = CGRectMake(self.origin.x, self.frame.origin.y + self.frame.size.height, _dropDownViewWidth, kButtomImageViewHeight);
+            [self.superview addSubview:_buttomImageView];
+        }
         
         NSInteger num = [_leftTableView numberOfRowsInSection:0];
         CGFloat tableViewHeight = num * kTableViewCellHeight > _tableViewHeight+1 ? _tableViewHeight:num*kTableViewCellHeight+1;
@@ -687,7 +702,9 @@
             } else {
                 _leftTableView.frame = CGRectMake(self.origin.x, self.frame.origin.y + self.frame.size.height, _dropDownViewWidth, tableViewHeight);
             }
-            _buttomImageView.frame = CGRectMake(self.origin.x, CGRectGetMaxY(_leftTableView.frame)-2, _dropDownViewWidth, kButtomImageViewHeight);
+            if (_showBottomImage) {
+                _buttomImageView.frame = CGRectMake(self.origin.x, CGRectGetMaxY(_leftTableView.frame)-2, _dropDownViewWidth, kButtomImageViewHeight);
+            }
         }];
     } else {
         [UIView animateWithDuration:0.2 animations:^{
@@ -698,13 +715,17 @@
             } else {
                 _leftTableView.frame = CGRectMake(self.origin.x, self.frame.origin.y + self.frame.size.height, _dropDownViewWidth, 0);
             }
-            _buttomImageView.frame = CGRectMake(self.origin.x, CGRectGetMaxY(_leftTableView.frame)-2, _dropDownViewWidth, kButtomImageViewHeight);
+            if (_showBottomImage) {
+                _buttomImageView.frame = CGRectMake(self.origin.x, CGRectGetMaxY(_leftTableView.frame)-2, _dropDownViewWidth, kButtomImageViewHeight);
+            }
         } completion:^(BOOL finished) {
             if (_rightTableView.superview) {
                 [_rightTableView removeFromSuperview];
             }
             [_leftTableView removeFromSuperview];
-            [_buttomImageView removeFromSuperview];
+            if (_showBottomImage) {
+                [_buttomImageView removeFromSuperview];
+            }
         }];
     }
     complete();
@@ -812,10 +833,14 @@
             [tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
         }
         
-        if (_dataSourceFlags.numberOfItemsInRow && [_dataSource menu:self numberOfItemsInRow:indexPath.row column:_currentSelectedMenudIndex]> 0){
-            cell.accessoryView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"icon_chose_arrow_nor"] highlightedImage:[UIImage imageNamed:@"icon_chose_arrow_sel"]];
+        if (_dataSourceFlags.accessoryViewForRowAtIndexPath) {
+            cell.accessoryView = [_dataSource menu:self accessoryViewForRowAtIndexPath:[DOPIndexPath indexPathWithCol:_currentSelectedMenudIndex row:indexPath.row]];
         } else {
-            cell.accessoryView = nil;
+            if (_dataSourceFlags.numberOfItemsInRow && [_dataSource menu:self numberOfItemsInRow:indexPath.row column:_currentSelectedMenudIndex]> 0){
+                cell.accessoryView = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"icon_chose_arrow_nor"] highlightedImage:[UIImage imageNamed:@"icon_chose_arrow_sel"]];
+            } else {
+                cell.accessoryView = nil;
+            }
         }
         
         cell.backgroundColor = kCellBgColor;
@@ -853,7 +878,11 @@
             [_rightTableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionMiddle];
         }
         cell.backgroundColor = [UIColor whiteColor];
-        cell.accessoryView = nil;
+        if (_dataSourceFlags.accessoryViewForItemsInRowAtAtIndexPath) {
+            cell.accessoryView = [_dataSource menu:self accessoryViewForItemsInRowAtAtIndexPath:[DOPIndexPath indexPathWithCol:_currentSelectedMenudIndex row:indexPath.row]];
+        } else {
+            cell.accessoryView = nil;
+        }
     }
     
     return cell;

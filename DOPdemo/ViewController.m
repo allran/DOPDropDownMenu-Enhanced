@@ -42,9 +42,10 @@
     
     // 添加下拉菜单
     DOPDropDownMenu *menu = [[DOPDropDownMenu alloc] initWithOrigin:CGPointMake(0, 64) andHeight:44];
+    menu.hidenTableViewWhenColumnOnlyOne = YES;
+    menu.indicatorAlignType = DOPIndicatorAlignTypeCloseToTitle;
     menu.delegate = self;
     menu.dataSource = self;
-    menu.hidenTableViewWhenColumnOnlyOne = YES;
     [self.view addSubview:menu];
     _menu = menu;
     //当下拉菜单收回时的回调，用于网络请求新的数据
